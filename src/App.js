@@ -1,8 +1,9 @@
+import NewUsers from "./NewUser";
 
-import Users2 from './Users2';
+
 function App() {
   
-  return <Users2 />
+  return <NewUsers />
 }
 
 export default App;

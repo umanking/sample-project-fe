@@ -1,6 +1,5 @@
 
-import React, { useEffect, useReducer } from 'react';
-import axios from "axios";
+import { useEffect, useReducer } from 'react';
 
 function reducer(state, action){
   switch(action.type){
@@ -27,46 +26,31 @@ function reducer(state, action){
   }
 }
 
-function Users2(){
+function useAsync(callback, deps= [], skip=false){
   const [state, dispatch] = useReducer(reducer, {
-    loading: false,
-    data: null,
-    error: null
+    loading:false, 
+    data: null, 
+    error: false
   });
 
-  const fetchUsers = async () => {
-    dispatch({type: 'LOADING' });
+  const fetchData = async ()=>{
+    dispatch({type: 'LOADING'}); 
     try {
-      const response = await axios.get(
-        '/api/member'
-      );
-      dispatch({type: 'SUCCESS', data: response.data }); 
-    }catch (e) {
-      dispatch({type: 'ERROR', error: e});
+      const data = await callback(); 
+      dispatch({type: 'SUCCESS', data}); 
+    }catch (e){
+      dispatch({type: 'ERROR', error:e}); 
     }
-  }
+  }; 
 
-    useEffect(()=> {
-      fetchUsers();
-    },[]);
+  useEffect(()=> {
+    if (skip) return; 
+    fetchData();
+    // eslint 설정을 다음 줄에서만 비활성화
+    // eslint-disable-next-line
+  }, deps);
 
+  return [state, fetchData]; 
+}
 
-    const {loading, data: users, error } = state; 
-    if (loading) return <div>로딩중..</div>;
-    if (error) return <div>에러가 발생했습니다</div>;
-    if (!users) return null;
-    return (
-      <>
-        <ul>
-          {users.map(user => (
-            <li key={user.id}>
-              {user.name} ({user.email})
-            </li>
-          ))}
-        </ul>
-        <button onClick={fetchUsers}>다시 불러오기</button>
-      </>
-    );
-  }
-
-export default Users2; 
+export default useAsync;
